@@ -126,4 +126,4 @@ def carkey_request_ticket():
         return jsonify({'error': 'No data received'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)  # 启动应用，在 http://127.0.0.1:5001/
+    app.run(host='0.0.0.0', debug=True, port=5001)  # 启动应用，在 http://127.0.0.1:5001/

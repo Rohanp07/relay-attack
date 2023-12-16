@@ -1,5 +1,6 @@
 import base64
 import json
+import datetime
 
 import requests
 import socket
@@ -139,16 +140,32 @@ def main():
 
     car_key = CarKey("CK993Y8ER5", CARKEY_AS_SHARED_KEY)
 
+    application_start_time = datetime.datetime.now()
 
     authenticator_to_as = Authenticator(car_key.deviceID)
+
+    encryption_message_1_start_time = datetime.datetime.now()
     encrypted_authenticator = encrypt(CARKEY_AS_SHARED_KEY, authenticator_to_as)
+    encryption_message_1_end_time = datetime.datetime.now()
+
+    encryption_message_1_elapsed_time = encryption_message_1_end_time - encryption_message_1_start_time
+
+    print("Encrypt message to AS Elapsed time:", encryption_message_1_elapsed_time.total_seconds() * 1000)
 
     encrypted_authenticator_base64 = base64.b64encode(encrypted_authenticator).decode('utf-8')
 
     data_to_as = {'authenticator': encrypted_authenticator_base64}
 
     # http communication, send request to AS
-    as_response = car_key.https_send("http://127.0.0.1:5000/carkey_send_request", data_to_as)
+    communication_with_as_start_time = datetime.datetime.now()
+    # as_response = car_key.https_send("http://127.0.0.1:5000/carkey_send_request", data_to_as)
+    as_response = car_key.https_send("http://99.79.51.184:5000/carkey_send_request", data_to_as)
+    communication_with_as_end_time = datetime.datetime.now()
+
+    communication_with_as_elapsed_time = communication_with_as_end_time - communication_with_as_start_time
+
+    print("Communicate with AS Elapsed time:", communication_with_as_elapsed_time.total_seconds() * 1000)
+
 
 
     encrypted_carKey_TGS_session_key = base64.b64decode(as_response.get('message2').encode('utf-8'))
@@ -156,11 +173,24 @@ def main():
 
     # encrypted_as_to_carKey_tgt_base64 = base64.b64decode(encrypted_as_to_carKey_tgt).decode('utf-8')
 
+    decrypt_message_from_as_start_time = datetime.datetime.now()
     decrypted_carKey_TGS_session_key = decrypt(CARKEY_AS_SHARED_KEY, encrypted_carKey_TGS_session_key)
+    decrypt_message_from_as_end_time = datetime.datetime.now()
+
+    decrypt_message_from_as_elapsed_time = decrypt_message_from_as_end_time - decrypt_message_from_as_start_time
+
+    print("Decrypt message from AS Elapsed time:", decrypt_message_from_as_elapsed_time.total_seconds() * 1000)
 
     # Message 4
     authenticator_to_tgs = Authenticator(car_key.deviceID)
+
+    encryption_message_4_start_time = datetime.datetime.now()
     encrypted_carKey_TGS_authenticator = encrypt(decrypted_carKey_TGS_session_key, authenticator_to_tgs)
+    encryption_message_4_end_time = datetime.datetime.now()
+
+    encryption_message_4_elapsed_time = encryption_message_4_end_time - encryption_message_4_start_time
+
+    print("Encrypt message to TGS Elapsed time:", encryption_message_4_elapsed_time.total_seconds() * 1000)
 
     encrypted_carKey_TGS_authenticator_base64 = base64.b64encode(encrypted_carKey_TGS_authenticator).decode('utf-8')
 
@@ -168,7 +198,14 @@ def main():
                    'message4': encrypted_carKey_TGS_authenticator_base64}
 
     # http communication, send request to TGS
-    tgs_response = car_key.https_send("http://127.0.0.1:5001/carkey_request_ticket", data_to_tgs)
+    communication_with_tgs_start_time = datetime.datetime.now()
+    # tgs_response = car_key.https_send("http://127.0.0.1:5001/carkey_request_ticket", data_to_tgs)
+    tgs_response = car_key.https_send("http://99.79.51.184:5001/carkey_request_ticket", data_to_tgs)
+    communication_with_tgs_end_time = datetime.datetime.now()
+
+    communication_with_tgs_elapsed_time = communication_with_tgs_end_time - communication_with_tgs_start_time
+
+    print("Communicate with TGS Elapsed time:", communication_with_tgs_elapsed_time.total_seconds() * 1000)
 
 
     encrypted_carKey_car_session_key = base64.b64decode(tgs_response.get('message5').encode('utf-8'))
@@ -176,11 +213,25 @@ def main():
     encrypted_tgs_ticket = base64.b64decode(tgs_response.get('message6').encode('utf-8'))
     # encrypted_tgs_ticket_base64 = base64.b64encode(encrypted_tgs_ticket).decode('utf-8')
 
+    decrypt_message_from_tgs_start_time = datetime.datetime.now()
     decrypted_carKey_car_session_key = decrypt(decrypted_carKey_TGS_session_key, encrypted_carKey_car_session_key)
+    decrypt_message_from_tgs_end_time = datetime.datetime.now()
+
+    decrypt_message_from_tgs_elapsed_time = decrypt_message_from_tgs_end_time - decrypt_message_from_tgs_start_time
+
+    print("Decrypt message from TGS Elapsed time:", decrypt_message_from_tgs_elapsed_time.total_seconds() * 1000)
 
     # Message 7
     authenticator_to_car = Authenticator(car_key.deviceID)
+
+    encryption_message_7_start_time = datetime.datetime.now()
     encrypted_to_car_authenticator = encrypt(decrypted_carKey_car_session_key, authenticator_to_car)
+    encryption_message_7_end_time = datetime.datetime.now()
+
+    encryption_message_7_elapsed_time = encryption_message_7_end_time - encryption_message_7_start_time
+
+    print("Encrypt message to Car Elapsed time:", encryption_message_7_elapsed_time.total_seconds() * 1000)
+
     encrypted_to_car_authenticator_base64 = base64.b64encode(encrypted_to_car_authenticator).decode('utf-8')
 
     data_to_car = {'message6': tgs_response.get('message6'),
@@ -198,7 +249,13 @@ def main():
     # print('Response from car:', car_message)
 
     # bluetooth communication, send request to Car
+    communication_with_car_start_time = datetime.datetime.now()
     car_response_bt = car_key.simulate_bluetooth_communication(data_to_car)
+    communication_with_car_end_time = datetime.datetime.now()
+
+    communication_with_car_elapsed_time = communication_with_car_end_time - communication_with_car_start_time
+
+    print("Communicate with Car Elapsed time:", communication_with_car_elapsed_time.total_seconds() * 1000)
 
     car_response_bt_content = base64.b64decode(car_response_bt.get('message8').encode('utf-8'))
 
@@ -207,6 +264,12 @@ def main():
     car_message_bt = decrypted_car_response_bt.message
 
     print('Response from car Bluetooth:', car_message_bt)
+
+    application_end_time = datetime.datetime.now()
+
+    application_elapsed_time = application_end_time - application_start_time
+
+    print("Application Elapsed time:", application_elapsed_time.total_seconds() * 1000)
 
 if __name__ == "__main__":
     main()

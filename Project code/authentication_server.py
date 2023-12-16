@@ -117,4 +117,4 @@ def carkey_send_request():
         return jsonify({'error': 'No data received'})
 
 if __name__ == '__main__':
-    app.run(debug=True)  # 启动应用，默认在 http://127.0.0.1:5000/
+    app.run(host='0.0.0.0', debug=True)  # 启动应用，默认在 http://127.0.0.1:5000/
