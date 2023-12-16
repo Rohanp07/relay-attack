@@ -14,7 +14,7 @@ from Crypto.Random import get_random_bytes
 app = Flask(__name__)
 
 # 定义白名单，包含允许连接的客户端 IP 地址
-whitelist = ['127.0.0.1', '192.168.1.102']
+whitelist = ['127.0.0.1', '10.0.0.109']
 
 def handle_client(client_socket, client_address):
     if client_address[0] not in whitelist:
@@ -70,7 +70,8 @@ def handle_client(client_socket, client_address):
     client_socket.close()
 
 def start_server():
-    server_address = ('127.0.0.1', 8888)
+    # server_address = ('127.0.0.1', 8888)
+    server_address = ('0.0.0.0', 8888)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind(server_address)
