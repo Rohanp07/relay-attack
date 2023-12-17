@@ -10,6 +10,9 @@ from dataclasses import dataclass, field
 from typing import Any, Optional, Tuple
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+from memory_profiler import profile
+import psutil
+import os
 
 
 class CarKey:
@@ -135,7 +138,24 @@ class CarResponse:
     message: str
     timestamp: float
 
+@profile # analyze memory usage
 def main():
+
+    # 获取当前进程的PID（进程ID）
+    pid = os.getpid()
+
+    # 根据PID获取进程对象
+    process = psutil.Process(pid)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_1 = process.cpu_percent()
+    print(f"当前进程CPU使用率-1：{cpu_usage_1}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_1 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-1：{memory_usage_1 / (1024 * 1024)} MB")
+
+
     with open("carkey_as_shared_key.pem", "rb") as key_file:
         CARKEY_AS_SHARED_KEY = key_file.read()
 
@@ -147,6 +167,15 @@ def main():
 
     encryption_message_1_start_time = datetime.datetime.now()
     encrypted_authenticator = encrypt(CARKEY_AS_SHARED_KEY, authenticator_to_as)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_2 = process.cpu_percent()
+    print(f"当前进程CPU使用率-2：{cpu_usage_2}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_2 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-2：{memory_usage_2 / (1024 * 1024)} MB")
+
     encryption_message_1_end_time = datetime.datetime.now()
 
     encryption_message_1_elapsed_time = encryption_message_1_end_time - encryption_message_1_start_time
@@ -157,10 +186,23 @@ def main():
 
     data_to_as = {'authenticator': encrypted_authenticator_base64}
 
+    # 将数据写入到 JSON 文件
+    with open("data_to_as.json", "w") as json_file1:
+        json.dump(data_to_as, json_file1)
+
     # http communication, send request to AS
     communication_with_as_start_time = datetime.datetime.now()
     # as_response = car_key.https_send("http://127.0.0.1:5000/carkey_send_request", data_to_as)
     as_response = car_key.https_send("http://99.79.51.184:5000/carkey_send_request", data_to_as)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_3 = process.cpu_percent()
+    print(f"当前进程CPU使用率-3：{cpu_usage_3}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_3 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-3：{memory_usage_3 / (1024 * 1024)} MB")
+
     communication_with_as_end_time = datetime.datetime.now()
 
     communication_with_as_elapsed_time = communication_with_as_end_time - communication_with_as_start_time
@@ -176,6 +218,15 @@ def main():
 
     decrypt_message_from_as_start_time = datetime.datetime.now()
     decrypted_carKey_TGS_session_key = decrypt(CARKEY_AS_SHARED_KEY, encrypted_carKey_TGS_session_key)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_4 = process.cpu_percent()
+    print(f"当前进程CPU使用率-4：{cpu_usage_4}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_4 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-4：{memory_usage_4 / (1024 * 1024)} MB")
+
     decrypt_message_from_as_end_time = datetime.datetime.now()
 
     decrypt_message_from_as_elapsed_time = decrypt_message_from_as_end_time - decrypt_message_from_as_start_time
@@ -187,6 +238,15 @@ def main():
 
     encryption_message_4_start_time = datetime.datetime.now()
     encrypted_carKey_TGS_authenticator = encrypt(decrypted_carKey_TGS_session_key, authenticator_to_tgs)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_5 = process.cpu_percent()
+    print(f"当前进程CPU使用率-5：{cpu_usage_5}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_5 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-5：{memory_usage_5 / (1024 * 1024)} MB")
+
     encryption_message_4_end_time = datetime.datetime.now()
 
     encryption_message_4_elapsed_time = encryption_message_4_end_time - encryption_message_4_start_time
@@ -198,10 +258,23 @@ def main():
     data_to_tgs = {'message3': as_response.get('message3'),
                    'message4': encrypted_carKey_TGS_authenticator_base64}
 
+    # 将数据写入到 JSON 文件
+    with open("data_to_tgs.json", "w") as json_file2:
+        json.dump(data_to_tgs, json_file2)
+
     # http communication, send request to TGS
     communication_with_tgs_start_time = datetime.datetime.now()
     # tgs_response = car_key.https_send("http://127.0.0.1:5001/carkey_request_ticket", data_to_tgs)
     tgs_response = car_key.https_send("http://99.79.51.184:5001/carkey_request_ticket", data_to_tgs)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_6 = process.cpu_percent()
+    print(f"当前进程CPU使用率-6：{cpu_usage_6}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_6 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-6：{memory_usage_6 / (1024 * 1024)} MB")
+
     communication_with_tgs_end_time = datetime.datetime.now()
 
     communication_with_tgs_elapsed_time = communication_with_tgs_end_time - communication_with_tgs_start_time
@@ -216,6 +289,15 @@ def main():
 
     decrypt_message_from_tgs_start_time = datetime.datetime.now()
     decrypted_carKey_car_session_key = decrypt(decrypted_carKey_TGS_session_key, encrypted_carKey_car_session_key)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_7 = process.cpu_percent()
+    print(f"当前进程CPU使用率-7：{cpu_usage_7}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_7 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-7：{memory_usage_7 / (1024 * 1024)} MB")
+
     decrypt_message_from_tgs_end_time = datetime.datetime.now()
 
     decrypt_message_from_tgs_elapsed_time = decrypt_message_from_tgs_end_time - decrypt_message_from_tgs_start_time
@@ -227,6 +309,15 @@ def main():
 
     encryption_message_7_start_time = datetime.datetime.now()
     encrypted_to_car_authenticator = encrypt(decrypted_carKey_car_session_key, authenticator_to_car)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_8 = process.cpu_percent()
+    print(f"当前进程CPU使用率-8：{cpu_usage_8}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_8 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-8：{memory_usage_8 / (1024 * 1024)} MB")
+
     encryption_message_7_end_time = datetime.datetime.now()
 
     encryption_message_7_elapsed_time = encryption_message_7_end_time - encryption_message_7_start_time
@@ -237,6 +328,10 @@ def main():
 
     data_to_car = {'message6': tgs_response.get('message6'),
                    'message7': encrypted_to_car_authenticator_base64}
+
+    # 将数据写入到 JSON 文件
+    with open("data_to_car.json", "w") as json_file3:
+        json.dump(data_to_car, json_file3)
 
     # http communication, send request to Car
     # car_response = car_key.https_send("http://127.0.0.1:5002/carkey_request_car", data_to_car)
@@ -252,6 +347,15 @@ def main():
     # bluetooth communication, send request to Car
     communication_with_car_start_time = datetime.datetime.now()
     car_response_bt = car_key.simulate_bluetooth_communication(data_to_car)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_9 = process.cpu_percent()
+    print(f"当前进程CPU使用率-9：{cpu_usage_9}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_9 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-9：{memory_usage_9 / (1024 * 1024)} MB")
+
     communication_with_car_end_time = datetime.datetime.now()
 
     communication_with_car_elapsed_time = communication_with_car_end_time - communication_with_car_start_time
@@ -261,6 +365,15 @@ def main():
     car_response_bt_content = base64.b64decode(car_response_bt.get('message8').encode('utf-8'))
 
     decrypted_car_response_bt = decrypt(decrypted_carKey_car_session_key, car_response_bt_content)
+
+    # 获取单个进程的CPU使用率
+    cpu_usage_10 = process.cpu_percent()
+    print(f"当前进程CPU使用率-10：{cpu_usage_10}%")
+
+    # 获取单个进程的内存使用情况
+    memory_usage_10 = process.memory_info().rss  # 获取常驻内存集大小 (RSS)
+    print(f"当前进程内存使用-10：{memory_usage_10 / (1024 * 1024)} MB")
+
 
     car_message_bt = decrypted_car_response_bt.message
 
@@ -272,5 +385,7 @@ def main():
 
     print("Application Elapsed time:", application_elapsed_time.total_seconds() * 1000)
 
+
 if __name__ == "__main__":
+
     main()

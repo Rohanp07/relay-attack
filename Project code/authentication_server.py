@@ -10,6 +10,9 @@ from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
 
+# 定义已注册设备ID，只允许已注册的设备访问
+registered_device_list = ['CK993Y8ER5']
+
 def encrypt(key: bytes, data: Any) -> bytes:
     """Encrypts the given data using AES."""
     # Convert data to bytes
@@ -98,6 +101,18 @@ def carkey_send_request():
     if req_data:
         authenticator = base64.b64decode(req_data.get('authenticator').encode('utf-8'))
         decrypted_authenticator = decrypt(CARKEY_AS_SHARED_KEY, authenticator)
+
+        # Authenticate device ID
+        if decrypted_authenticator.username not in registered_device_list:
+            print(f"Device {decrypted_authenticator.username} authentication fail (Device not registered)")
+
+            return jsonify({'error': 'Device not registered'})
+
+        # Authenticate timestamp
+        if time.time() - decrypted_authenticator.timestamp > 60:
+            print(f"Device {decrypted_authenticator.username} authentication fail (Request expired)")
+
+            return jsonify({'error': 'Request expired'})
 
         # Message 2
         carKey_TGS_session_key = get_random_bytes(16)
