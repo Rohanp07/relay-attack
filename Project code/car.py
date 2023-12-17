@@ -191,6 +191,7 @@ def carkey_request_car():
             return jsonify({'error': 'Device not matched'})
 
         if decrypted_tgs_ticket.validity - time.time() < 3540:
+            print(f"validity: {decrypted_tgs_ticket.validity}, now: {time.time()}")
             print(f"Service Ticket expired")
 
             return jsonify({'error': 'Service Ticket expired'})
