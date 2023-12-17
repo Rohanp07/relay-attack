@@ -127,7 +127,7 @@ def carkey_request_ticket():
         encrypted_carKey_car_session_key_base64 = base64.b64encode(encrypted_carKey_car_session_key).decode('utf-8')
 
         # Message 6
-        tgs_ticket = Ticket("TGS65UY849IU7", carKey_car_session_key)
+        tgs_ticket = Ticket(decrypted_as_to_carKey_tgt.username, carKey_car_session_key)
         encrypted_tgs_ticket = encrypt(TGS_CAR_SHARED_KEY, tgs_ticket)
         encrypted_tgs_ticket_base64 = base64.b64encode(encrypted_tgs_ticket).decode('utf-8')
 

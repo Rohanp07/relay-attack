@@ -120,7 +120,7 @@ def carkey_send_request():
         encrypted_carKey_TGS_session_key_base64 = base64.b64encode(encrypted_carKey_TGS_session_key).decode('utf-8')
 
         # Message 3
-        as_to_carKey_tgt = Ticket("AS657JYY6YRT971", carKey_TGS_session_key)
+        as_to_carKey_tgt = Ticket(decrypted_authenticator.username, carKey_TGS_session_key)
         encrypted_as_to_carKey_tgt = encrypt(AS_TGS_SHARED_KEY, as_to_carKey_tgt)
         encrypted_as_to_carKey_tgt_base64 = base64.b64encode(encrypted_as_to_carKey_tgt).decode('utf-8')
 
