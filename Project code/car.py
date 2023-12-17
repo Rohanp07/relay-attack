@@ -51,10 +51,10 @@ def handle_client(client_socket, client_address):
 
                 return jsonify({'error': 'Device not matched'})
 
-            if decrypted_tgs_ticket.validity > time.time() + 3540:
-                print(f"Granting ticket expired")
+            if decrypted_tgs_ticket.validity - time.time() < 3540:
+                print(f"Service Ticket expired")
 
-                return jsonify({'error': 'Granting ticket expired'})
+                return jsonify({'error': 'Service Ticket expired'})
 
             # Message 8
             message = 'Door has been unlocked'
