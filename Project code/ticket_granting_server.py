@@ -116,10 +116,10 @@ def carkey_request_ticket():
 
             return jsonify({'error': 'Device not matched'})
 
-        if decrypted_as_to_carKey_tgt.validity > time.time() + 3540:
-            print(f"Granting ticket expired")
+        if decrypted_as_to_carKey_tgt.validity - time.time() < 3540:
+            print(f"Granting Ticket expired")
 
-            return jsonify({'error': 'Granting ticket expired'})
+            return jsonify({'error': 'Granting Ticket expired'})
 
         # Message 5
         carKey_car_session_key = get_random_bytes(16)

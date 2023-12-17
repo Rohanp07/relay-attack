@@ -185,6 +185,15 @@ def carkey_request_car():
         decrypted_to_car_authenticator = decrypt(carKey_car_session_key, encrypted_to_car_authenticator)
 
         # Authenticate device ID & timestamp
+        if decrypted_tgs_ticket.username != decrypted_to_car_authenticator.username:
+            print(f"Device authentication fail (Device not matched)")
+
+            return jsonify({'error': 'Device not matched'})
+
+        if decrypted_tgs_ticket.validity - time.time() < 3540:
+            print(f"Service Ticket expired")
+
+            return jsonify({'error': 'Service Ticket expired'})
 
         # Message 8
         message = 'Door has been unlocked'
